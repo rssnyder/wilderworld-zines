@@ -33,6 +33,7 @@ if __name__ == "__main__":
         # create embed object for webhook
         embed = DiscordEmbed(
             title=entry.get("title", "New Post"),
+            url=entry.get("link", "wilderworld.com"),
             description=cleanhtml(entry.get("summary", "New Post")),
             color="03b2f8",
         )
