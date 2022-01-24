@@ -65,3 +65,47 @@ if __name__ == "__main__":
             print("sent " + entry["id"])
 
         sleep(5)
+
+    for entry in parse("https://www.zine.live/rss/").entries:
+
+        if db.search(zines.id == entry["id"]):
+            print("already sent zine")
+            continue
+
+        webhook = DiscordWebhook(url=getenv("WEBHOOK_URL"))
+
+        # create embed object for webhook
+        embed = DiscordEmbed(
+            title=entry.get("title", "New Post"),
+            url=entry.get("link", "wilderworld.com"),
+            description=cleanhtml(entry.get("summary", "New Post")),
+            color="03b2f8",
+        )
+
+        # set author
+        embed.set_author(
+            name=entry.get("author", "zine.live"),
+            url="https://zine.live",
+            icon_url="https://cdn.discordapp.com/attachments/896863575061188659/935242503383285801/iTunesArtwork1x-1.png",
+        )
+
+        # set image
+        try:
+            embed.set_image(url=entry.get("media_content").pop().get("url"))
+        except IndexError:
+            print("no image")
+            pass
+
+        # set timestamp (default is now)
+        embed.set_timestamp()
+
+        # add embed object to webhook
+        webhook.add_embed(embed)
+
+        response = webhook.execute()
+
+        if response.status_code == 200:
+            db.insert({"id": entry["id"]})
+            print("sent " + entry["id"])
+
+        sleep(5)
