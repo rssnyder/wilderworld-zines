@@ -5,3 +5,5 @@
 send new zines from wilderworld.com to discord
 
 commissioned for the offical wilderworld discord server
+
+powered by github's generosity
