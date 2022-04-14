@@ -3,6 +3,10 @@ on:
   schedule:
     - cron: "0 * * * *"
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   run:
     runs-on: ubuntu-latest
@@ -14,19 +18,21 @@ jobs:
           python-version: 3.9
 
       - run: pip3 install -r requirements.txt
+      
+      - uses: rssnyder/ghcr-artifact-store@0.1.0
+        with:
+          artifact: zines.json
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - run: python main.py
         env:
           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
 
-      - name: save
-        continue-on-error: true
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add zines.json
-          git commit -m db_update
-          git push
+      - uses: rssnyder/ghcr-artifact-store@0.1.0
+        with:
+          method: PUT
+          artifact: zines.json
+          token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: metrics
         run: echo "last_update{repo=\"$GITHUB_REPOSITORY\",client=\"wilder\"} $(date +%s)" | curl -u metrics:$METRICS_PASSWORD --data-binary @- https://pushmetrics.rileysnyder.org/metrics/job/github_actions/instance/github
