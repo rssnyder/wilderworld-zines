@@ -24,7 +24,8 @@ jobs:
           artifact: zines.json
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - run: python main.py
+      - id: run
+        run: python main.py
         env:
           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
 
@@ -34,7 +35,8 @@ jobs:
           artifact: zines.json
           token: ${{ secrets.GITHUB_TOKEN }}
       
-      - name: metrics
+      - if: steps.run.outcome == 'success'
+        name: metrics
         run: echo "last_update{repo=\"$GITHUB_REPOSITORY\",client=\"wilder\"} $(date +%s)" | curl -u metrics:$METRICS_PASSWORD --data-binary @- https://pushmetrics.rileysnyder.org/metrics/job/github_actions/instance/github
         env:
           METRICS_PASSWORD: ${{ secrets.METRICS_PASSWORD }}
